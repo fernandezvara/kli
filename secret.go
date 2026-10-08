@@ -1,5 +1,5 @@
 // cli/secret.go
-package cli
+package kli
 
 import (
 	"runtime"

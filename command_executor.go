@@ -1,5 +1,5 @@
 // cli/command_executor.go
-package cli
+package kli
 
 import (
 	"errors"

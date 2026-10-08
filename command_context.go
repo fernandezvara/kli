@@ -1,5 +1,5 @@
 // cli/command_context.go
-package cli
+package kli
 
 import "io"
 

@@ -1,8 +1,8 @@
-# cli
+# kli
 
 A Go library for building command-line applications. A configuration key is declared once — with its type, flag, environment variable, file key, default value and validation rules — and resolved automatically from every source. Commands and subcommands get their own flags and generated help.
 
-- Typed access through generics: `cli.Get[T]` and `cli.MustGet[T]`
+- Typed access through generics: `kli.Get[T]` and `kli.MustGet[T]`
 - Flags, environment variables and config files (JSON, YAML, TOML) with a configurable source priority
 - Validation: ranges, enums, regular expressions, length and item bounds, durations, custom checks
 - Secrets held in guarded memory and masked in dumps and help output
@@ -38,16 +38,16 @@ import (
     "fmt"
     "os"
 
-    "github.com/fernandezvara/cli"
+    "github.com/fernandezvara/kli"
 )
 
 func main() {
-    cfg := cli.New()
+    cfg := kli.New()
 
     // An empty name makes this the default command.
     cfg.Command("").
-        Func(func(ctx *cli.CommandContext) error {
-            port := cli.MustGet[int64](ctx, "PORT")
+        Func(func(ctx *kli.CommandContext) error {
+            port := kli.MustGet[int64](ctx, "PORT")
             fmt.Printf("Server starting on port %d\n", port)
 
             if s := ctx.CommandConfig.GetSecret("DATABASE_URL"); s.IsSet() {
@@ -56,7 +56,7 @@ func main() {
             return nil
         }).
         ShortHelp("Start the server").
-        Config(func(cc *cli.CommandConfig) {
+        Config(func(cc *kli.CommandConfig) {
             cc.Define("PORT").
                 Int64().
                 Env("PORT").
@@ -74,10 +74,10 @@ func main() {
         })
 
     err := cfg.Execute(os.Args)
-    if err != nil && !cli.IsReported(err) {
+    if err != nil && !kli.IsReported(err) {
         fmt.Fprintln(os.Stderr, err)
     }
-    os.Exit(cli.ExitCode(err))
+    os.Exit(kli.ExitCode(err))
 }
 ```
 
@@ -100,11 +100,11 @@ import (
     "fmt"
     "os"
 
-    "github.com/fernandezvara/cli"
+    "github.com/fernandezvara/kli"
 )
 
 func main() {
-    cfg := cli.New()
+    cfg := kli.New()
 
     // Global configuration
     cfg.Define("VERBOSE").
@@ -118,7 +118,7 @@ func main() {
         Func(deployCommand).
         ShortHelp("Deploy the application").
         LongHelp("Deploy the application to the specified environment.").
-        Config(func(cc *cli.CommandConfig) {
+        Config(func(cc *kli.CommandConfig) {
             cc.Define("ENVIRONMENT").
                 String().
                 Flag("env").
@@ -139,15 +139,15 @@ func main() {
         Aliases("st", "info")
 
     err := cfg.Execute(os.Args)
-    if err != nil && !cli.IsReported(err) {
+    if err != nil && !kli.IsReported(err) {
         fmt.Fprintln(os.Stderr, err)
     }
-    os.Exit(cli.ExitCode(err))
+    os.Exit(kli.ExitCode(err))
 }
 
-func deployCommand(ctx *cli.CommandContext) error {
-    env := cli.MustGet[string](ctx, "ENVIRONMENT")
-    dryRun := cli.MustGet[bool](ctx, "DRY_RUN")
+func deployCommand(ctx *kli.CommandContext) error {
+    env := kli.MustGet[string](ctx, "ENVIRONMENT")
+    dryRun := kli.MustGet[bool](ctx, "DRY_RUN")
 
     if dryRun {
         fmt.Printf("Would deploy to %s (dry run)\n", env)
@@ -157,13 +157,13 @@ func deployCommand(ctx *cli.CommandContext) error {
     return nil
 }
 
-func statusCommand(ctx *cli.CommandContext) error {
+func statusCommand(ctx *kli.CommandContext) error {
     fmt.Println("Application is running")
     return nil
 }
 ```
 
-Definitions on `cfg` itself are global: shared by every command. Their flags are parsed from the arguments **before** the command word (`myapp --verbose deploy ...`), and `cli.Get` resolves a key in the command's definitions first, then in the global ones.
+Definitions on `cfg` itself are global: shared by every command. Their flags are parsed from the arguments **before** the command word (`myapp --verbose deploy ...`), and `kli.Get` resolves a key in the command's definitions first, then in the global ones.
 
 ## Configuration
 
@@ -233,14 +233,14 @@ Values resolve in priority order — `Flag > Environment > File > Default` by de
 Change the order globally or per definition:
 
 ```go
-cfg.SetDefaultPriority(cli.PriorityFileEnvFlagDefault)
+cfg.SetDefaultPriority(kli.PriorityFileEnvFlagDefault)
 
 cc.Define("PORT").
     Int64().
     Flag("port").
     Env("PORT").
     Default(int64(8080)).
-    Priority(cli.PriorityEnvFlagDefault)
+    Priority(kli.PriorityEnvFlagDefault)
 ```
 
 Presets: `PriorityFlagEnvFileDefault`, `PriorityFlagEnvDefault`, `PriorityEnvFlagDefault`, `PriorityFileEnvFlagDefault`, `PriorityDefaultOnly`. A priority that references a source the definition doesn't declare is reported as a configuration error.
@@ -302,28 +302,28 @@ There are no positional-argument declarations: pass values as flags or environme
 
 ## Exit codes, environment and I/O
 
-`Execute` never exits the process. It returns an error, and `cli.ExitCode(err)` gives the exit code to end with:
+`Execute` never exits the process. It returns an error, and `kli.ExitCode(err)` gives the exit code to end with:
 
 | Situation | Code |
 |---|---|
-| Success, or help shown | `0` (`cli.ExitOK`) |
-| A command returned an error | `1` (`cli.ExitFailure`) |
-| Unknown command or flag, missing or invalid flag value, unknown subcommand | `2` (`cli.ExitUsage`) |
-| A command returned `cli.Exit(code, err)` | `code` |
+| Success, or help shown | `0` (`kli.ExitOK`) |
+| A command returned an error | `1` (`kli.ExitFailure`) |
+| Unknown command or flag, missing or invalid flag value, unknown subcommand | `2` (`kli.ExitUsage`) |
+| A command returned `kli.Exit(code, err)` | `code` |
 
 ```go
 func main() {
-    cfg := cli.New()
+    cfg := kli.New()
     // ... definitions and commands ...
     err := cfg.Execute(os.Args)
-    if err != nil && !cli.IsReported(err) {
+    if err != nil && !kli.IsReported(err) {
         fmt.Fprintln(os.Stderr, err) // configuration errors were already printed
     }
-    os.Exit(cli.ExitCode(err))
+    os.Exit(kli.ExitCode(err))
 }
 
 // in a command:
-return cli.Exit(3, errors.New("deploy failed")) // exit code 3
+return kli.Exit(3, errors.New("deploy failed")) // exit code 3
 ```
 
 Everything the library reads or writes can be replaced, which makes commands testable in-process:
@@ -342,19 +342,19 @@ Add cross-cutting concerns to your commands:
 
 ```go
 // Global middleware - applies to all commands
-cfg.UseMiddleware(cli.RecoveryMiddleware())
-cfg.UseMiddleware(cli.LoggingMiddleware(func(ctx *cli.CommandContext, d time.Duration) {
+cfg.UseMiddleware(kli.RecoveryMiddleware())
+cfg.UseMiddleware(kli.LoggingMiddleware(func(ctx *kli.CommandContext, d time.Duration) {
     log.Printf("%s completed in %v", ctx.Command, d)
 }))
-cfg.UseMiddleware(cli.MetricsMiddleware(collectMetrics))
+cfg.UseMiddleware(kli.MetricsMiddleware(collectMetrics))
 
 // Command-specific middleware
 cfg.UseMiddlewareForCommands([]string{"admin", "shutdown"}, authMiddleware)
 
 // Custom middleware - plain functions matching CommandMiddleware
 // (see a full example in examples/cli-tool: tokenAuthMiddleware)
-func authMiddleware(next cli.CommandFunc) cli.CommandFunc {
-    return func(ctx *cli.CommandContext) error {
+func authMiddleware(next kli.CommandFunc) kli.CommandFunc {
+    return func(ctx *kli.CommandContext) error {
         // ...validate...
         return next(ctx)
     }
@@ -521,7 +521,7 @@ Returned by `cfg.Define(key)` and `cc.Define(key)`:
 ## Install
 
 ```bash
-go get github.com/fernandezvara/cli
+go get github.com/fernandezvara/kli
 ```
 
 ## License

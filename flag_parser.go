@@ -1,5 +1,5 @@
 // cli/flag_parser.go
-package cli
+package kli
 
 import (
 	"flag"

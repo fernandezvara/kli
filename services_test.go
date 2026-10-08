@@ -1,5 +1,5 @@
 // cli/services_test.go
-package cli
+package kli
 
 import (
 	"errors"

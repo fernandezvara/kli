@@ -1,5 +1,5 @@
 // cli/types.go
-package cli
+package kli
 
 import (
 	"fmt"

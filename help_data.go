@@ -1,5 +1,5 @@
 // cli/help_data.go
-package cli
+package kli
 
 import (
 	"cmp"

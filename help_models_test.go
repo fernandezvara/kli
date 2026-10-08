@@ -1,5 +1,5 @@
 // cli/help_models_test.go
-package cli
+package kli
 
 import (
 	"testing"

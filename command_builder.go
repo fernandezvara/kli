@@ -1,5 +1,5 @@
 // cli/command_builder.go
-package cli
+package kli
 
 import "maps"
 

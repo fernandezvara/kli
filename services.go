@@ -1,5 +1,5 @@
 // cli/services.go
-package cli
+package kli
 
 // CommandServices holds all command execution services
 type CommandServices struct {

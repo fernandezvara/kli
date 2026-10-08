@@ -1,5 +1,5 @@
 // cli/command_router_test.go
-package cli
+package kli
 
 import (
 	"strings"

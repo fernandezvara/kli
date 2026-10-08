@@ -1,5 +1,5 @@
 // cli/help_layer_coordinator.go
-package cli
+package kli
 
 import (
 	"fmt"

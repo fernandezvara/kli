@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.4.0
+
+### Changed
+
+- **Breaking**: the library was renamed from `cli` to `kli`. The module path is now `github.com/fernandezvara/kli` and the package name is `kli`. Update your imports and replace `cli.` qualifiers with `kli.` (or keep `cli.` by aliasing the import: `cli "github.com/fernandezvara/kli"`).
+
+## v0.3.0
+
+Same release as v0.2.1; the tag was created without changes.
+
 ## v0.2.1
 
 ### Changed
@@ -16,7 +26,7 @@ Made for programs that must control their exit code and be tested in-process.
 
 ### Added
 
-- `cli.Exit(code, err)`, `cli.ExitCode(err)`, `cli.IsReported(err)` and `ExitOK`/`ExitFailure`/`ExitUsage`.
+- `kli.Exit(code, err)`, `kli.ExitCode(err)`, `kli.IsReported(err)` and `ExitOK`/`ExitFailure`/`ExitUsage`.
 - `Config.SetEnv`, `Config.SetIO` and `Config.SetName`; `CommandContext.Getenv`, `Stdin`, `Stdout`, `Stderr`.
 - `CommandContext.Positional()`: the arguments left after a command's flags.
 - `help` as a word (`app help`, `app help <command>`, `app <command> help`).

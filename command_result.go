@@ -1,5 +1,5 @@
 // cli/command_result.go
-package cli
+package kli
 
 import "fmt"
 

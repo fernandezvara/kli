@@ -1,5 +1,5 @@
 // cli/command_builder_test.go
-package cli
+package kli
 
 import (
 	"testing"

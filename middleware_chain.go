@@ -1,5 +1,5 @@
 // cli/middleware_chain.go
-package cli
+package kli
 
 import "slices"
 

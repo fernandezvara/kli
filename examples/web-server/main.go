@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fernandezvara/cli"
+	"github.com/fernandezvara/kli"
 )
 
 func main() {
-	cfg := cli.New()
+	cfg := kli.New()
 
 	// Server configuration with comprehensive validation
 	cfg.Define("PORT").
@@ -117,23 +117,23 @@ func main() {
 
 	// Add empty string command for config-only mode
 	cfg.Command("").
-		Func(func(ctx *cli.CommandContext) error {
+		Func(func(ctx *kli.CommandContext) error {
 			fmt.Printf("Web Server Starting!\n")
 
 			// Get basic configuration with fallbacks
-			if port, err := cli.Get[int64](ctx, "PORT"); err == nil {
+			if port, err := kli.Get[int64](ctx, "PORT"); err == nil {
 				fmt.Printf("   Port: %d\n", port)
 			} else {
 				fmt.Printf("   Port: 8080 (default)\n")
 			}
 
-			if host, err := cli.Get[string](ctx, "HOST"); err == nil {
+			if host, err := kli.Get[string](ctx, "HOST"); err == nil {
 				fmt.Printf("   Host: %s\n", host)
 			} else {
 				fmt.Printf("   Host: localhost (default)\n")
 			}
 
-			if logLevel, err := cli.Get[string](ctx, "LOG_LEVEL"); err == nil {
+			if logLevel, err := kli.Get[string](ctx, "LOG_LEVEL"); err == nil {
 				fmt.Printf("   Log Level: %s\n", logLevel)
 			} else {
 				fmt.Printf("   Log Level: info (default)\n")
@@ -152,7 +152,7 @@ func main() {
 				fmt.Printf("   JWT Key: not configured\n")
 			}
 
-			baseUrl, err := cli.Get[string](ctx, "BASE_URL")
+			baseUrl, err := kli.Get[string](ctx, "BASE_URL")
 			if err == nil {
 				fmt.Printf("   Base URL: %s\n", baseUrl)
 			} else {
@@ -176,7 +176,7 @@ This is a  web server that supports:
 - Secret management
 
 Use --help or --full-help to see all available options.`).
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			// Add basic configuration for demo
 			cc.Define("PORT").
 				Int64().

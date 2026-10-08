@@ -1,5 +1,5 @@
 // cli/config_processor_test.go
-package cli
+package kli
 
 import (
 	"strings"

@@ -1,5 +1,5 @@
 // cli/help_templates_test.go
-package cli
+package kli
 
 import (
 	"slices"

@@ -1,5 +1,5 @@
 // cli/benchmark_test.go
-package cli
+package kli
 
 import (
 	"regexp"

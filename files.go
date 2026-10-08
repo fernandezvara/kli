@@ -1,5 +1,5 @@
 // cli/files.go
-package cli
+package kli
 
 import (
 	"encoding/json"

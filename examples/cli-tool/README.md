@@ -1,6 +1,6 @@
 # CLI tool example
 
-A command-line application demonstrating cli's command system, middleware pipeline and token authentication.
+A command-line application demonstrating kli's command system, middleware pipeline and token authentication.
 
 ## What it demonstrates
 
@@ -124,8 +124,8 @@ The middleware pipeline in this example:
 
 ## Custom Middleware
 
-Middleware are plain functions matching the `cli.CommandMiddleware`
-signature (`func(next cli.CommandFunc) cli.CommandFunc`). The
+Middleware are plain functions matching the `kli.CommandMiddleware`
+signature (`func(next kli.CommandFunc) kli.CommandFunc`). The
 `tokenAuthMiddleware` in `main.go` shows the pattern: wrap the handler, read
 configuration from the `CommandContext` (secret-aware via `IsSecret`/
 `GetSecret`), and either fail with an error or call `next(ctx)`.
@@ -137,9 +137,9 @@ instead, which runs *before* values are resolved, so it cannot inspect
 resolved config:
 
 ```go
-func tokenAuthMiddleware(configKey string) cli.CommandMiddleware {
-    return func(next cli.CommandFunc) cli.CommandFunc {
-        return func(ctx *cli.CommandContext) error {
+func tokenAuthMiddleware(configKey string) kli.CommandMiddleware {
+    return func(next kli.CommandFunc) kli.CommandFunc {
+        return func(ctx *kli.CommandContext) error {
             cfg := ctx.GlobalConfig
             if ctx.CommandConfig != nil {
                 cfg = ctx.CommandConfig
@@ -187,7 +187,7 @@ go run main.go help deploy
 
 ## Error handling
 
-`Execute` returns errors carrying an exit code; `main` maps them with `cli.ExitCode`:
+`Execute` returns errors carrying an exit code; `main` maps them with `kli.ExitCode`:
 
 ```bash
 # Missing required option

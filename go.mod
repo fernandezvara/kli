@@ -1,4 +1,4 @@
-module github.com/fernandezvara/cli
+module github.com/fernandezvara/kli
 
 go 1.27.1
 

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fernandezvara/cli"
+	"github.com/fernandezvara/kli"
 )
 
 // TestResult holds one test outcome
@@ -38,8 +38,8 @@ func addResult(source, key, expectedType, returnedType, value string, success bo
 }
 
 // testGet is a generic helper that tests Get[T] and records the result
-func testGet[T any](source, key, expectedType string, ctx *cli.CommandContext) {
-	val, err := cli.Get[T](ctx, key)
+func testGet[T any](source, key, expectedType string, ctx *kli.CommandContext) {
+	val, err := kli.Get[T](ctx, key)
 	if err != nil {
 		addResult(source, key, expectedType, "error", "", false, err.Error())
 		return
@@ -50,7 +50,7 @@ func testGet[T any](source, key, expectedType string, ctx *cli.CommandContext) {
 }
 
 // runAllTypeTests runs Get[T] for every supported type using the given context
-func runAllTypeTests(source string, ctx *cli.CommandContext) {
+func runAllTypeTests(source string, ctx *kli.CommandContext) {
 	// Basic types
 	testGet[string](source, "TEST_STRING", "string", ctx)
 	testGet[bool](source, "TEST_BOOL", "bool", ctx)
@@ -64,8 +64,8 @@ func runAllTypeTests(source string, ctx *cli.CommandContext) {
 }
 
 // defineAllTypes adds all type definitions inside a command config callback
-func defineAllTypes(cc *cli.CommandConfig, withEnv, withFlag, withFile bool) {
-	d := func(key string) *cli.DefinitionBuilder {
+func defineAllTypes(cc *kli.CommandConfig, withEnv, withFlag, withFile bool) {
+	d := func(key string) *kli.DefinitionBuilder {
 		b := cc.Define(key)
 		if withEnv {
 			b.Env(key)
@@ -93,7 +93,7 @@ func defineAllTypes(cc *cli.CommandConfig, withEnv, withFlag, withFile bool) {
 
 // testSourceWithCommand creates a config, adds a command that runs the tests, and executes it
 func testSourceWithCommand(source string, withEnv, withFlag, withFile bool, extraArgs []string) {
-	cfg := cli.New()
+	cfg := kli.New()
 
 	if withFile {
 		err := cfg.LoadFile(testConfigPath())
@@ -103,12 +103,12 @@ func testSourceWithCommand(source string, withEnv, withFlag, withFile bool, extr
 	}
 
 	cfg.Command("test").
-		Func(func(ctx *cli.CommandContext) error {
+		Func(func(ctx *kli.CommandContext) error {
 			runAllTypeTests(source, ctx)
 			return nil
 		}).
 		ShortHelp("Run conversion tests").
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			defineAllTypes(cc, withEnv, withFlag, withFile)
 		})
 

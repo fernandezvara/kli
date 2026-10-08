@@ -1,5 +1,5 @@
 // cli/type_converter.go
-package cli
+package kli
 
 import (
 	"fmt"

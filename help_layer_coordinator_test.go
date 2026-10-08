@@ -1,5 +1,5 @@
 // cli/help_coordinator_test.go
-package cli
+package kli
 
 import (
 	"strings"

@@ -24,7 +24,7 @@ Configuration is declared in two places in `main.go`:
 - global `cfg.Define` calls cover every key the program reads, including env-only and file-only keys,
 - the command's `Config(func(cc))` re-declares the keys that take flags, so `--port`, `--host` and `--log-level` parse against the command.
 
-`cli.Get` resolves a key in the command's definitions first and falls back to the global ones; the global secrets are read back through `ctx.GlobalConfig.GetSecret`.
+`kli.Get` resolves a key in the command's definitions first and falls back to the global ones; the global secrets are read back through `ctx.GlobalConfig.GetSecret`.
 
 A command-level `cc.Define` replaces the global definition of the same key for that command — constraints such as `Range` or `Required` are not inherited, so the command definitions below repeat the essentials and intentionally skip the rest.
 
@@ -74,11 +74,11 @@ The empty string command pattern:
 ```go
 // Add empty string command for config-only mode
 cfg.Command("").
-    Func(func(ctx *cli.CommandContext) error {
+    Func(func(ctx *kli.CommandContext) error {
         // Type-safe access to configuration
-        port, _ := cli.Get[int64](ctx, "PORT")
-        host, _ := cli.Get[string](ctx, "HOST")
-        logLevel, _ := cli.Get[string](ctx, "LOG_LEVEL")
+        port, _ := kli.Get[int64](ctx, "PORT")
+        host, _ := kli.Get[string](ctx, "HOST")
+        logLevel, _ := kli.Get[string](ctx, "LOG_LEVEL")
         
         fmt.Printf("Web Server Starting!\n")
         fmt.Printf("   Port: %d\n", port)
@@ -94,7 +94,7 @@ cfg.Command("").
     }).
     ShortHelp("Start the web server").
     LongHelp("Starts the web server with the specified configuration.").
-    Config(func(cc *cli.CommandConfig) {
+    Config(func(cc *kli.CommandConfig) {
         // Add configuration to the default command
         cc.Define("PORT").Int64().Env("PORT").Flag("port").Default(int64(8080))
         cc.Define("HOST").String().Env("HOST").Flag("host").Default("localhost")

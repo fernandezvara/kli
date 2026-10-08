@@ -1,5 +1,5 @@
 // cli/command_context_test.go
-package cli
+package kli
 
 import (
 	"testing"

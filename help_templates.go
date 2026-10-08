@@ -1,5 +1,5 @@
 // cli/help_templates.go
-package cli
+package kli
 
 import (
 	"fmt"

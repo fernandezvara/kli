@@ -1,5 +1,5 @@
 // cli/errors.go
-package cli
+package kli
 
 import (
 	"fmt"

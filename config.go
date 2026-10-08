@@ -1,5 +1,5 @@
 // cli/config.go
-package cli
+package kli
 
 import (
 	"fmt"

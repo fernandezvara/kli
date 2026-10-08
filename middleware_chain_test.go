@@ -1,5 +1,5 @@
 // cli/middleware_chain_test.go
-package cli
+package kli
 
 import (
 	"errors"

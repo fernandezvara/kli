@@ -1,5 +1,5 @@
 // cli/command.go
-package cli
+package kli
 
 import "slices"
 

@@ -1,5 +1,5 @@
 // cli/help_service.go
-package cli
+package kli
 
 import (
 	"fmt"

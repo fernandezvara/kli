@@ -1,5 +1,5 @@
 // cli/middleware.go
-package cli
+package kli
 
 import (
 	"fmt"

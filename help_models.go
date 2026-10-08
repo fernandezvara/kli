@@ -1,5 +1,5 @@
 // cli/help_models.go
-package cli
+package kli
 
 import "slices"
 

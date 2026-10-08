@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/fernandezvara/cli"
+	"github.com/fernandezvara/kli"
 )
 
 // Custom validator for log tail lines - ensures reasonable range
@@ -42,7 +42,7 @@ func portSecurityValidator(value any) error {
 }
 
 func main() {
-	cfg := cli.New()
+	cfg := kli.New()
 
 	// Global configuration (available to all commands)
 	cfg.Define("VERBOSE").
@@ -94,21 +94,21 @@ func main() {
 }
 
 // setupGlobalMiddleware configures middleware that applies to all commands
-func setupGlobalMiddleware(cfg *cli.Config) {
+func setupGlobalMiddleware(cfg *kli.Config) {
 	// Recovery middleware - catches panics
-	cfg.UseMiddleware(cli.RecoveryMiddleware())
+	cfg.UseMiddleware(kli.RecoveryMiddleware())
 
 	// Timing middleware - measures command execution time
-	cfg.UseMiddleware(cli.TimingMiddleware())
+	cfg.UseMiddleware(kli.TimingMiddleware())
 
 	// Logging middleware - logs all command executions via a callback
-	cfg.UseMiddleware(cli.LoggingMiddleware(func(ctx *cli.CommandContext, duration time.Duration) {
+	cfg.UseMiddleware(kli.LoggingMiddleware(func(ctx *kli.CommandContext, duration time.Duration) {
 		log.Printf("Command %s completed in %v", ctx.Command, duration)
 	}))
 
 	// Metrics middleware - collects execution metrics via a callback
 	// (also doubles as the error-logging hook: err is non-nil on failures)
-	cfg.UseMiddleware(cli.MetricsMiddleware(func(ctx *cli.CommandContext, duration time.Duration, err error) {
+	cfg.UseMiddleware(kli.MetricsMiddleware(func(ctx *kli.CommandContext, duration time.Duration, err error) {
 		status := "success"
 		if err != nil {
 			status = "error"
@@ -119,7 +119,7 @@ func setupGlobalMiddleware(cfg *cli.Config) {
 }
 
 // setupCommands defines all commands with their configurations and middleware
-func setupCommands(cfg *cli.Config) {
+func setupCommands(cfg *kli.Config) {
 	// Deploy command
 	cfg.Command("deploy").
 		Func(deployCommand).
@@ -134,7 +134,7 @@ This command handles the complete deployment process including:
 - Deploying to target environment
 - Health checks`).
 		Aliases("dep", "release").
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("ENVIRONMENT").
 				String().
 				Flag("env").
@@ -189,7 +189,7 @@ This command group provides subcommands for container operations:
 		Func(dockerRunCommand).
 		ShortHelp("Run Docker container").
 		LongHelp("Start a new Docker container with the specified configuration.").
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("IMAGE").
 				String().
 				Flag("image").
@@ -224,7 +224,7 @@ This command group provides subcommands for container operations:
 		Func(dockerStopCommand).
 		ShortHelp("Stop Docker container").
 		LongHelp("Stop a running Docker container gracefully.").
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("CONTAINER_ID").
 				String().
 				Flag("container-id").
@@ -243,7 +243,7 @@ This command group provides subcommands for container operations:
 		Func(dockerLogsCommand).
 		ShortHelp("View container logs").
 		LongHelp("Display logs from a running Docker container.").
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("CONTAINER_ID").
 				String().
 				Flag("container-id").
@@ -269,7 +269,7 @@ This command group provides subcommands for container operations:
 		Func(dockerStatusCommand).
 		ShortHelp("Check container status").
 		LongHelp("Show the status of all application containers.").
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("FILTER").
 				String().
 				Flag("filter").
@@ -289,7 +289,7 @@ This command group provides subcommands for container operations:
 		LongHelp(`Administrative command for user management.
 
 Requires ADMIN_TOKEN environment variable for authentication.`).
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("ACTION").
 				String().
 				Flag("action").
@@ -318,7 +318,7 @@ Requires ADMIN_TOKEN environment variable for authentication.`).
 		LongHelp(`Administrative command to shutdown the service.
 
 Requires ADMIN_TOKEN environment variable for authentication.`).
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("GRACEFUL").
 				Bool().
 				Flag("graceful").
@@ -339,7 +339,7 @@ Requires ADMIN_TOKEN environment variable for authentication.`).
 		LongHelp(`Show comprehensive system status including API and database.
 
 Requires API_KEY environment variable for authentication.`).
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("DETAILED").
 				Bool().
 				Flag("detailed").
@@ -362,7 +362,7 @@ Requires API_KEY environment variable for authentication.`).
 		LongHelp(`Configuration management commands.
 
 View, validate, and manage application configuration.`).
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("SHOW_SECRETS").
 				Bool().
 				Flag("show-secrets").
@@ -399,7 +399,7 @@ all available options, environment variables, and examples.`).
 
 	// Test command with custom help
 	cfg.Command("custom-test").
-		Func(func(ctx *cli.CommandContext) error {
+		Func(func(ctx *kli.CommandContext) error {
 			fmt.Println("Custom test command executed!")
 			return nil
 		}).
@@ -416,7 +416,7 @@ Features demonstrated:
 - LongHelp text display
 - Integration with validation errors when present
 - Template-based formatting for consistency`).
-		Config(func(cc *cli.CommandConfig) {
+		Config(func(cc *kli.CommandConfig) {
 			cc.Define("TEST_VALUE").
 				String().
 				Flag("test-value").
@@ -427,28 +427,28 @@ Features demonstrated:
 
 // Command implementations
 
-func deployCommand(ctx *cli.CommandContext) error {
-	environment, err := cli.Get[string](ctx, "ENVIRONMENT")
+func deployCommand(ctx *kli.CommandContext) error {
+	environment, err := kli.Get[string](ctx, "ENVIRONMENT")
 	if err != nil {
 		return fmt.Errorf("failed to get ENVIRONMENT: %w", err)
 	}
 
-	dryRun, err := cli.Get[bool](ctx, "DRY_RUN")
+	dryRun, err := kli.Get[bool](ctx, "DRY_RUN")
 	if err != nil {
 		return fmt.Errorf("failed to get DRY_RUN: %w", err)
 	}
 
-	skipTests, err := cli.Get[bool](ctx, "SKIP_TESTS")
+	skipTests, err := kli.Get[bool](ctx, "SKIP_TESTS")
 	if err != nil {
 		return fmt.Errorf("failed to get SKIP_TESTS: %w", err)
 	}
 
-	force, err := cli.Get[bool](ctx, "FORCE")
+	force, err := kli.Get[bool](ctx, "FORCE")
 	if err != nil {
 		return fmt.Errorf("failed to get FORCE: %w", err)
 	}
 
-	branch, err := cli.Get[string](ctx, "BRANCH")
+	branch, err := kli.Get[string](ctx, "BRANCH")
 	if err != nil {
 		return fmt.Errorf("failed to get BRANCH: %w", err)
 	}
@@ -469,18 +469,18 @@ func deployCommand(ctx *cli.CommandContext) error {
 	return nil
 }
 
-func adminUsersCommand(ctx *cli.CommandContext) error {
-	action, err := cli.Get[string](ctx, "ACTION")
+func adminUsersCommand(ctx *kli.CommandContext) error {
+	action, err := kli.Get[string](ctx, "ACTION")
 	if err != nil {
 		return fmt.Errorf("failed to get ACTION: %w", err)
 	}
 
-	username, err := cli.Get[string](ctx, "USERNAME")
+	username, err := kli.Get[string](ctx, "USERNAME")
 	if err != nil {
 		return fmt.Errorf("failed to get USERNAME: %w", err)
 	}
 
-	role, err := cli.Get[string](ctx, "ROLE")
+	role, err := kli.Get[string](ctx, "ROLE")
 	if err != nil {
 		return fmt.Errorf("failed to get ROLE: %w", err)
 	}
@@ -504,13 +504,13 @@ func adminUsersCommand(ctx *cli.CommandContext) error {
 	return nil
 }
 
-func adminShutdownCommand(ctx *cli.CommandContext) error {
-	graceful, err := cli.Get[bool](ctx, "GRACEFUL")
+func adminShutdownCommand(ctx *kli.CommandContext) error {
+	graceful, err := kli.Get[bool](ctx, "GRACEFUL")
 	if err != nil {
 		return fmt.Errorf("failed to get GRACEFUL: %w", err)
 	}
 
-	delay, err := cli.Get[time.Duration](ctx, "DELAY")
+	delay, err := kli.Get[time.Duration](ctx, "DELAY")
 	if err != nil {
 		return fmt.Errorf("failed to get DELAY: %w", err)
 	}
@@ -528,13 +528,13 @@ func adminShutdownCommand(ctx *cli.CommandContext) error {
 	return nil
 }
 
-func statusCommand(ctx *cli.CommandContext) error {
-	detailed, err := cli.Get[bool](ctx, "DETAILED")
+func statusCommand(ctx *kli.CommandContext) error {
+	detailed, err := kli.Get[bool](ctx, "DETAILED")
 	if err != nil {
 		return fmt.Errorf("failed to get DETAILED: %w", err)
 	}
 
-	format, err := cli.Get[string](ctx, "FORMAT")
+	format, err := kli.Get[string](ctx, "FORMAT")
 	if err != nil {
 		return fmt.Errorf("failed to get FORMAT: %w", err)
 	}
@@ -555,13 +555,13 @@ func statusCommand(ctx *cli.CommandContext) error {
 	return nil
 }
 
-func configCommand(ctx *cli.CommandContext) error {
-	showSecrets, err := cli.Get[bool](ctx, "SHOW_SECRETS")
+func configCommand(ctx *kli.CommandContext) error {
+	showSecrets, err := kli.Get[bool](ctx, "SHOW_SECRETS")
 	if err != nil {
 		return fmt.Errorf("failed to get SHOW_SECRETS: %w", err)
 	}
 
-	validateOnly, err := cli.Get[bool](ctx, "VALIDATE_ONLY")
+	validateOnly, err := kli.Get[bool](ctx, "VALIDATE_ONLY")
 	if err != nil {
 		return fmt.Errorf("failed to get VALIDATE_ONLY: %w", err)
 	}
@@ -583,7 +583,7 @@ func configCommand(ctx *cli.CommandContext) error {
 	return nil
 }
 
-func helpCommand(ctx *cli.CommandContext) error {
+func helpCommand(ctx *kli.CommandContext) error {
 	fmt.Printf("=== Help Command ===\n")
 	fmt.Printf("CLI Tool - Comprehensive Command Management\n\n")
 	fmt.Printf("Available Commands:\n")
@@ -605,7 +605,7 @@ func helpCommand(ctx *cli.CommandContext) error {
 
 // Docker command implementations
 
-func dockerCommand(ctx *cli.CommandContext) error {
+func dockerCommand(ctx *kli.CommandContext) error {
 	// This function handles the docker command itself
 	// Subcommands will be handled by their respective functions
 	fmt.Printf("=== Docker Command ===\n")
@@ -614,23 +614,23 @@ func dockerCommand(ctx *cli.CommandContext) error {
 	return nil
 }
 
-func dockerRunCommand(ctx *cli.CommandContext) error {
-	image, err := cli.Get[string](ctx, "IMAGE")
+func dockerRunCommand(ctx *kli.CommandContext) error {
+	image, err := kli.Get[string](ctx, "IMAGE")
 	if err != nil {
 		return fmt.Errorf("failed to get IMAGE: %w", err)
 	}
 
-	port, err := cli.Get[int64](ctx, "PORT")
+	port, err := kli.Get[int64](ctx, "PORT")
 	if err != nil {
 		return fmt.Errorf("failed to get PORT: %w", err)
 	}
 
-	detach, err := cli.Get[bool](ctx, "DETACH")
+	detach, err := kli.Get[bool](ctx, "DETACH")
 	if err != nil {
 		return fmt.Errorf("failed to get DETACH: %w", err)
 	}
 
-	environment, err := cli.Get[string](ctx, "ENVIRONMENT")
+	environment, err := kli.Get[string](ctx, "ENVIRONMENT")
 	if err != nil {
 		return fmt.Errorf("failed to get ENVIRONMENT: %w", err)
 	}
@@ -652,13 +652,13 @@ func dockerRunCommand(ctx *cli.CommandContext) error {
 	return nil
 }
 
-func dockerStopCommand(ctx *cli.CommandContext) error {
-	containerID, err := cli.Get[string](ctx, "CONTAINER_ID")
+func dockerStopCommand(ctx *kli.CommandContext) error {
+	containerID, err := kli.Get[string](ctx, "CONTAINER_ID")
 	if err != nil {
 		return fmt.Errorf("failed to get CONTAINER_ID: %w", err)
 	}
 
-	timeout, err := cli.Get[time.Duration](ctx, "TIMEOUT")
+	timeout, err := kli.Get[time.Duration](ctx, "TIMEOUT")
 	if err != nil {
 		return fmt.Errorf("failed to get TIMEOUT: %w", err)
 	}
@@ -673,18 +673,18 @@ func dockerStopCommand(ctx *cli.CommandContext) error {
 	return nil
 }
 
-func dockerLogsCommand(ctx *cli.CommandContext) error {
-	containerID, err := cli.Get[string](ctx, "CONTAINER_ID")
+func dockerLogsCommand(ctx *kli.CommandContext) error {
+	containerID, err := kli.Get[string](ctx, "CONTAINER_ID")
 	if err != nil {
 		return fmt.Errorf("failed to get CONTAINER_ID: %w", err)
 	}
 
-	follow, err := cli.Get[bool](ctx, "FOLLOW")
+	follow, err := kli.Get[bool](ctx, "FOLLOW")
 	if err != nil {
 		return fmt.Errorf("failed to get FOLLOW: %w", err)
 	}
 
-	tail, err := cli.Get[int64](ctx, "TAIL")
+	tail, err := kli.Get[int64](ctx, "TAIL")
 	if err != nil {
 		return fmt.Errorf("failed to get TAIL: %w", err)
 	}
@@ -713,15 +713,15 @@ func dockerLogsCommand(ctx *cli.CommandContext) error {
 // config value to be set before the command runs. Middleware are plain
 // func(next CommandFunc) CommandFunc - wrap the handler, inspect the
 // CommandContext, and either return an error or call next(ctx).
-func tokenAuthMiddleware(configKey string) cli.CommandMiddleware {
-	return func(next cli.CommandFunc) cli.CommandFunc {
-		return func(ctx *cli.CommandContext) error {
+func tokenAuthMiddleware(configKey string) kli.CommandMiddleware {
+	return func(next kli.CommandFunc) kli.CommandFunc {
+		return func(ctx *kli.CommandContext) error {
 			var token string
 
 			// Secrets live in whichever config defines the key:
 			// command-scoped first, then global
 			secretDefined := false
-			for _, cfg := range []*cli.Config{ctx.CommandConfig, ctx.GlobalConfig} {
+			for _, cfg := range []*kli.Config{ctx.CommandConfig, ctx.GlobalConfig} {
 				if cfg != nil && cfg.IsSecret(configKey) {
 					secretDefined = true
 					token = cfg.GetSecret(configKey).String()
@@ -732,7 +732,7 @@ func tokenAuthMiddleware(configKey string) cli.CommandMiddleware {
 			// Fall back to a regular (non-secret) config value;
 			// Get already resolves command config vs global internally
 			if !secretDefined {
-				token, _ = cli.Get[string](ctx, configKey)
+				token, _ = kli.Get[string](ctx, configKey)
 			}
 
 			if token == "" {
@@ -747,13 +747,13 @@ func tokenAuthMiddleware(configKey string) cli.CommandMiddleware {
 	}
 }
 
-func dockerStatusCommand(ctx *cli.CommandContext) error {
-	filter, err := cli.Get[string](ctx, "FILTER")
+func dockerStatusCommand(ctx *kli.CommandContext) error {
+	filter, err := kli.Get[string](ctx, "FILTER")
 	if err != nil {
 		return fmt.Errorf("failed to get FILTER: %w", err)
 	}
 
-	verbose, err := cli.Get[bool](ctx, "VERBOSE")
+	verbose, err := kli.Get[bool](ctx, "VERBOSE")
 	if err != nil {
 		return fmt.Errorf("failed to get VERBOSE: %w", err)
 	}

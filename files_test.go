@@ -1,5 +1,5 @@
 // cli/files_test.go
-package cli
+package kli
 
 import (
 	"os"
