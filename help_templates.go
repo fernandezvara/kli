@@ -52,7 +52,8 @@ func (tc *templateComposer) registerDefaultPartials() {
 
 Use '{{.Executable}} <command> --help' for command-specific help{{else}}{{if .Description}}{{.Description}}
 
-{{end}}Use '{{.Executable}} --help' for configuration options{{end}}`
+{{end}}Use '{{.Executable}} --help' for configuration options{{end}}
+`
 }
 
 // RegisterPartial adds or updates a template partial
