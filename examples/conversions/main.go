@@ -122,13 +122,19 @@ func testSourceWithCommand(source string, withEnv, withFlag, withFile bool, extr
 // --- Environment variable helpers ---
 
 func setupEnvVars() {
-	os.Setenv("TEST_STRING", "env_string_value")
-	os.Setenv("TEST_BOOL", "false")
-	os.Setenv("TEST_INT64", "42")
-	os.Setenv("TEST_FLOAT64", "3.14159")
-	os.Setenv("TEST_DURATION", "5m")
-	os.Setenv("TEST_STRING_SLICE", "e1,e2,e3")
-	os.Setenv("TEST_INT64_SLICE", "10,20,30")
+	setEnv("TEST_STRING", "env_string_value")
+	setEnv("TEST_BOOL", "false")
+	setEnv("TEST_INT64", "42")
+	setEnv("TEST_FLOAT64", "3.14159")
+	setEnv("TEST_DURATION", "5m")
+	setEnv("TEST_STRING_SLICE", "e1,e2,e3")
+	setEnv("TEST_INT64_SLICE", "10,20,30")
+}
+
+func setEnv(key, value string) {
+	if err := os.Setenv(key, value); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: could not set %s: %v\n", key, err)
+	}
 }
 
 func clearEnvVars() {
@@ -137,7 +143,9 @@ func clearEnvVars() {
 		"TEST_STRING_SLICE", "TEST_INT64_SLICE",
 	}
 	for _, k := range keys {
-		os.Unsetenv(k)
+		if err := os.Unsetenv(k); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: could not unset %s: %v\n", k, err)
+		}
 	}
 }
 
@@ -158,11 +166,15 @@ func setupFileConfig() {
 		"test_int64_slice":  "100,200,300",
 	}
 	b, _ := json.MarshalIndent(data, "", "  ")
-	os.WriteFile(testConfigPath(), b, 0644)
+	if err := os.WriteFile(testConfigPath(), b, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: could not write test config file: %v\n", err)
+	}
 }
 
 func cleanupFileConfig() {
-	os.Remove(testConfigPath())
+	if err := os.Remove(testConfigPath()); err != nil && !os.IsNotExist(err) {
+		fmt.Fprintf(os.Stderr, "Warning: could not remove test config file: %v\n", err)
+	}
 }
 
 // --- Flag args builder ---

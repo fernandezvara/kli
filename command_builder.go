@@ -73,7 +73,7 @@ func (b *CommandBuilder) createCommandConfig() *CommandConfig {
 	}
 
 	// Copy global definitions
-	maps.Copy(cmdConfig.Config.definitions, b.config.definitions)
+	maps.Copy(cmdConfig.definitions, b.config.definitions)
 
 	return cmdConfig
 }
@@ -81,7 +81,7 @@ func (b *CommandBuilder) createCommandConfig() *CommandConfig {
 // mergeCommandConfig merges command-specific definitions
 func (b *CommandBuilder) mergeCommandConfig(cmdConfig *CommandConfig) {
 	// Store command-specific definitions (merge with global)
-	maps.Copy(b.cmd.Definitions, cmdConfig.Config.definitions)
+	maps.Copy(b.cmd.Definitions, cmdConfig.definitions)
 }
 
 // SubCommand adds a subcommand
@@ -107,6 +107,6 @@ type CommandConfig struct {
 // Define starts a new command-specific configuration definition
 func (cc *CommandConfig) Define(key string) *DefinitionBuilder {
 	builder := newDefinitionBuilder(cc.Config, key)
-	cc.Config.definitions[key] = builder.def
+	cc.definitions[key] = builder.def
 	return builder
 }

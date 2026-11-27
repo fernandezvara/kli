@@ -215,7 +215,7 @@ func (c *Config) resolveValueWithPriorityContext(key string, def *Definition, ct
 
 	// No value found
 	if def.required {
-		return nil, SourceDefault, fmt.Errorf("Not provided")
+		return nil, SourceDefault, fmt.Errorf("not provided")
 	}
 
 	return nil, SourceDefault, nil

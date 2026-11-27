@@ -140,9 +140,9 @@ func (ctx *ExecutionContext) renderErrorsWithCommand(cmd *Command, helpService *
 	// Create a simple help display for errors
 	var builder strings.Builder
 	if exe := helpService.coordinator.executable; ctx.command == exe || ctx.command == "" {
-		builder.WriteString(fmt.Sprintf("Usage: %s [options]\n\n", exe))
+		fmt.Fprintf(&builder, "Usage: %s [options]\n\n", exe)
 	} else {
-		builder.WriteString(fmt.Sprintf("Usage: %s %s [options]\n\n", exe, ctx.command))
+		fmt.Fprintf(&builder, "Usage: %s %s [options]\n\n", exe, ctx.command)
 	}
 
 	if cmd != nil && cmd.LongHelp != "" {
@@ -153,7 +153,7 @@ func (ctx *ExecutionContext) renderErrorsWithCommand(cmd *Command, helpService *
 	if len(errs) > 0 {
 		builder.WriteString("Configuration errors:\n")
 		for _, err := range errs {
-			builder.WriteString(fmt.Sprintf("  %s -> %s\n", err.Display, err.ErrorDescription))
+			fmt.Fprintf(&builder, "  %s -> %s\n", err.Display, err.ErrorDescription)
 		}
 		builder.WriteString("\n")
 	}

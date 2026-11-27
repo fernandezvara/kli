@@ -13,6 +13,7 @@
 - `-h`, `--h`, `-help` and `--help` all show help, as do `-full-help` and `--full-help` for full help. Before, `-help` and `--h` were reported as errors.
 - Help flags work in any position before `--`, not only last. `app help <command> <subcommand>` shows the subcommand's help.
 - **Breaking**: `h` and `help` cannot be used as flag names; `Execute` fails with exit code 1 if any definition uses one.
+- The error for a missing required value reads `not provided` instead of `Not provided`.
 - Using one flag name on two values makes `Execute` fail with exit code 1, naming both, instead of panicking.
 - Flag errors no longer cut hyphenated names (`--dry-run` was reported as `--dry`).
 - Help and errors list all of a value's flags on one line (`-f --file string`). Single-character flags are shown with one dash, including when they are the only flag.

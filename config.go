@@ -309,11 +309,6 @@ func (c *Config) getHelpService() *helpService {
 	return c.helpService
 }
 
-// getCommands returns the commands map for help system
-func (c *Config) getCommands() map[string]*Command {
-	return c.commands
-}
-
 // createServices creates a new CommandServices instance for internal use
 func (c *Config) createServices() *CommandServices {
 	return newCommandServices()
@@ -360,7 +355,7 @@ func (c *Config) Execute(args []string) error {
 
 	// A wrong definition fails every run, whatever the arguments
 	if err := c.checkFlagNames(); err != nil {
-		fmt.Fprintln(c.errOut(), err)
+		_, _ = fmt.Fprintln(c.errOut(), err)
 		return &ExitError{Code: ExitFailure, Err: err, Reported: true}
 	}
 
@@ -386,7 +381,7 @@ func (c *Config) Execute(args []string) error {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintln(c.errOut(), helpText)
+			_, _ = fmt.Fprintln(c.errOut(), helpText)
 			return usageError(fmt.Errorf("configuration errors"), true)
 		}
 		return nil
@@ -437,13 +432,13 @@ func (c *Config) executeWithGlobalMiddleware(cmd *Command, ctx *CommandContext) 
 				if err != nil {
 					return err
 				}
-				fmt.Fprintln(c.errOut(), helpText)
+				_, _ = fmt.Fprintln(c.errOut(), helpText)
 				return usageError(result.Error, true)
 			}
 
 			// Always display the message if it exists
 			if result.Message != "" {
-				fmt.Fprintln(c.errOut(), result.Message)
+				_, _ = fmt.Fprintln(c.errOut(), result.Message)
 			}
 
 			if result.ShouldExit {

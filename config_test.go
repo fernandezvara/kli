@@ -329,9 +329,8 @@ func TestConfigDestroy(t *testing.T) {
 	// Add a secret
 	cfg.Define("SECRET").String().Secret()
 	_ = cfg.Execute([]string{"test"})
-	secret := cfg.GetSecret("SECRET")
 	cfg.secrets.Store("SECRET", "test_secret_value")
-	secret = cfg.GetSecret("SECRET")
+	secret := cfg.GetSecret("SECRET")
 
 	// Verify secret exists
 	if !secret.IsSet() {

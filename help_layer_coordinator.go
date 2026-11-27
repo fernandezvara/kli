@@ -125,20 +125,12 @@ func (hc *helpCoordinator) ShowHelpWithCommands(command, subcommand string, full
 	var cmd *Command
 
 	if command == "" {
-		// Check if there's an empty string command first
-		if commands != nil {
-			if emptyCmd, exists := commands[""]; exists && len(commands) == 1 {
-				// A config-only app: help is the default command's help.
-				cmd = emptyCmd
-			} else {
-				// Otherwise list the commands (the default command's own
-				// help is `app <its name> --help` or the flags of its alias).
-				// No empty string command, show global help
-				return hc.showGlobalHelp(commands)
-			}
-		} else {
-			// No commands map available, show global help without commands
-			return hc.showGlobalHelp(nil)
+		// A config-only app has just the empty string command: help is that
+		// command's help, looked up below. Otherwise list the commands (the
+		// default command's own help is `app <its name> --help` or the flags
+		// of its alias).
+		if _, exists := commands[""]; !exists || len(commands) != 1 {
+			return hc.showGlobalHelp(commands)
 		}
 	}
 
@@ -290,9 +282,9 @@ func (hc *helpCoordinator) showSimpleCommandHelp(command, subcommand string, err
 	}
 
 	// Help hint
-	output.WriteString(fmt.Sprintf("Use %s %s", hc.executable, command))
+	fmt.Fprintf(&output, "Use %s %s", hc.executable, command)
 	if subcommand != "" {
-		output.WriteString(fmt.Sprintf(" %s", subcommand))
+		fmt.Fprintf(&output, " %s", subcommand)
 	}
 	output.WriteString(" --help' or '--full-help' for more information\n")
 
