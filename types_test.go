@@ -121,7 +121,13 @@ func TestParseValueBool(t *testing.T) {
 		{"TRUE", true, false},
 		{"FALSE", false, false},
 		{"invalid", false, true},
-		{"yes", false, true}, // Go's ParseBool doesn't support yes/no
+		{"yes", true, false},
+		{"Yes", true, false},
+		{"no", false, false},
+		{"NO", false, false},
+		{"t", false, true},
+		{"on", false, true},
+		{"2", false, true},
 	}
 
 	for _, tt := range tests {

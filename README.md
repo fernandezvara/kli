@@ -290,7 +290,7 @@ cfg.Command("start").
 
 ### Boolean flags
 
-`Bool()` definitions are switches: `--dry-run` sets the value to true, `--dry-run=false` sets it to false. A boolean flag never consumes the next argument.
+`Bool()` definitions are switches: `--dry-run` sets the value to true, `--dry-run=false` sets it to false. A boolean flag never consumes the next argument. Boolean values, from any source, are `true`, `1` or `yes` and `false`, `0` or `no`, in any letter case.
 
 ### Positional arguments
 

@@ -161,23 +161,13 @@ func convertDefaultValue(value any, targetType ValueType) (any, error) {
 		}
 
 	case TypeBool:
-		switch v := value.(type) {
-		case string:
-			lower := strings.ToLower(v)
-			switch lower {
-			case "true", "1", "yes", "on", "enabled":
-				return true, nil
-			case "false", "0", "no", "off", "disabled":
-				return false, nil
-			default:
-				return nil, fmt.Errorf("cannot convert string '%s' to bool", v)
+		switch value.(type) {
+		case string, int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
+			v, err := parseBool(fmt.Sprint(value))
+			if err != nil {
+				return nil, err
 			}
-		case int, int8, int16, int32, int64:
-			return reflect.ValueOf(v).Int() != 0, nil
-		case uint, uint8, uint16, uint32, uint64:
-			return reflect.ValueOf(v).Uint() != 0, nil
-		case float32, float64:
-			return reflect.ValueOf(v).Float() != 0, nil
+			return v, nil
 		default:
 			return nil, fmt.Errorf("cannot convert %T to bool", value)
 		}

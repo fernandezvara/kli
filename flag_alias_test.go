@@ -347,3 +347,68 @@ func TestReservedFlagNamesFailOnRun(t *testing.T) {
 		}
 	}
 }
+
+func TestInvalidBoolReportedAlike(t *testing.T) {
+	const reason = "invalid bool: maybe (use true/1/yes or false/0/no)"
+	tests := []struct {
+		name string
+		env  map[string]string
+		args []string
+	}{
+		{"flag", nil, []string{"go", "--dry-run=maybe"}},
+		{"alias", nil, []string{"go", "-n=maybe"}},
+		{"env", map[string]string{"DRY": "maybe"}, []string{"go"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := newHarness(tt.env)
+			h.cfg.Command("go").Func(func(*CommandContext) error { return nil }).Config(func(cc *CommandConfig) {
+				cc.Define("DRY_RUN").Bool().Flag("dry-run").Flag("n").Env("DRY")
+			})
+			if err := h.run(tt.args...); err == nil {
+				t.Fatal("expected an error")
+			}
+			out := h.stderr.String()
+			if !strings.Contains(out, "-n --dry-run bool") || !strings.Contains(out, "-> "+reason) {
+				t.Errorf("unexpected output:\n%s", out)
+			}
+			if strings.Contains(out, "unknown_flag") {
+				t.Errorf("flag not matched to its definition:\n%s", out)
+			}
+		})
+	}
+}
+
+func TestBoolValuesFromEverySource(t *testing.T) {
+	values := map[string]bool{"true": true, "1": true, "yes": true, "false": false, "0": false, "no": false}
+	for raw, want := range values {
+		sources := map[string]struct {
+			env  map[string]string
+			args []string
+			def  any
+		}{
+			"flag":    {nil, []string{"go", "--dry-run=" + raw}, !want},
+			"env":     {map[string]string{"DRY": raw}, []string{"go"}, !want},
+			"default": {nil, []string{"go"}, raw},
+		}
+		for source, tt := range sources {
+			t.Run(source+" "+raw, func(t *testing.T) {
+				var got bool
+				h := newHarness(tt.env)
+				h.cfg.Command("go").Func(func(ctx *CommandContext) error {
+					got = MustGet[bool](ctx, "DRY_RUN")
+					return nil
+				}).Config(func(cc *CommandConfig) {
+					cc.Define("DRY_RUN").Bool().Flag("dry-run").Env("DRY").Default(tt.def)
+				})
+				if err := h.run(tt.args...); err != nil {
+					t.Fatalf("unexpected error: %v\n%s", err, h.stderr.String())
+				}
+				if got != want {
+					t.Errorf("got %v, want %v", got, want)
+				}
+			})
+		}
+	}
+}

@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.3
+
+### Changed
+
+- Booleans from flags, environment variables, files and defaults all accept the same values, in any letter case: `true`, `1`, `yes` and `false`, `0`, `no`. `yes` and `no` are now accepted from flags, environment variables and files.
+- **Breaking**: `t` and `f` are no longer accepted, nor are `on`, `off`, `enabled`, `disabled` or numbers other than `1` and `0` as defaults.
+
+### Fixed
+
+- An invalid boolean reads `invalid bool: <value> (use true/1/yes or false/0/no)`.
+- An invalid boolean flag such as `--dry-run=maybe` is reported under that flag with the same message, instead of under `unknown_flag`.
+
 ## v0.3.2
 
 ### Added

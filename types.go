@@ -88,6 +88,19 @@ var (
 	PriorityDefaultOnly = SourcePriority{SourceDefault}
 )
 
+// parseBool reads a boolean, whatever its source: true, 1 and yes are true,
+// false, 0 and no are false, in any letter case
+func parseBool(raw string) (bool, error) {
+	switch strings.ToLower(raw) {
+	case "true", "1", "yes":
+		return true, nil
+	case "false", "0", "no":
+		return false, nil
+	default:
+		return false, fmt.Errorf("invalid bool: %s (use true/1/yes or false/0/no)", raw)
+	}
+}
+
 // parseValue parses a string value into the expected type
 func parseValue(raw string, valueType ValueType, delimiter string) (any, error) {
 	if raw == "" {
@@ -113,9 +126,9 @@ func parseValue(raw string, valueType ValueType, delimiter string) (any, error) 
 		return v, nil
 
 	case TypeBool:
-		v, err := strconv.ParseBool(raw)
+		v, err := parseBool(raw)
 		if err != nil {
-			return nil, fmt.Errorf("invalid bool: %s (use true/false, 1/0, yes/no)", raw)
+			return nil, err
 		}
 		return v, nil
 
