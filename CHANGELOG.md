@@ -1,10 +1,20 @@
 # Changelog
 
-## Unreleased
+## v0.3.3
+
+### Changed
+
+- Booleans from flags, environment variables, files and defaults all accept the same values, in any letter case: `true`, `1`, `yes` and `false`, `0`, `no`. `yes` and `no` are now accepted from flags, environment variables and files.
+- **Breaking**: `t` and `f` are no longer accepted, nor are `on`, `off`, `enabled`, `disabled` or numbers other than `1` and `0` as defaults.
+
+### Fixed
+
+- An invalid boolean reads `invalid bool: <value> (use true/1/yes or false/0/no)`.
+- An invalid boolean flag such as `--dry-run=maybe` is reported under that flag with the same message, instead of under `unknown_flag`.
 
 ## v0.3.2
 
-### Added (No breaking changes)
+### Added
 
 - `Flag` can be called several times to give one value several names (`Flag("f").Flag("file")`). If several are passed, the last one wins.
 
@@ -17,10 +27,6 @@
 - Using one flag name on two values makes `Execute` fail with exit code 1, naming both, instead of panicking.
 - Flag errors no longer cut hyphenated names (`--dry-run` was reported as `--dry`).
 - Help and errors list all of a value's flags on one line (`-f --file string`). Single-character flags are shown with one dash, including when they are the only flag.
-
-
-
-
 
 ## v0.3.1
 

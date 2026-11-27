@@ -2,6 +2,7 @@
 package kli
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -44,9 +45,9 @@ func (b *boolFlag) String() string {
 }
 
 func (b *boolFlag) Set(s string) error {
-	v, err := strconv.ParseBool(s)
+	v, err := parseBool(s)
 	if err != nil {
-		return fmt.Errorf("invalid boolean value %q", s)
+		return err
 	}
 	*b = boolFlag(strconv.FormatBool(v))
 	return nil
@@ -164,6 +165,17 @@ func (fp *flagParser) ConvertFlagErrorsToConfigErrors(errs []error, defs map[str
 			if _, name, found := strings.Cut(errMsg, pattern); found {
 				flagName = name
 				break
+			}
+		}
+
+		// A rejected boolean reads `invalid boolean value "x" for -name: reason`.
+		// Only the reason is kept, so it matches the one for other sources.
+		if rest, found := strings.CutPrefix(errMsg, "invalid boolean value "); found {
+			if value, quoteErr := strconv.QuotedPrefix(rest); quoteErr == nil {
+				rest, found = strings.CutPrefix(rest[len(value):], " for -")
+				if name, reason, ok := strings.Cut(rest, ": "); found && ok {
+					flagName, err = name, errors.New(reason)
+				}
 			}
 		}
 
