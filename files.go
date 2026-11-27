@@ -130,7 +130,7 @@ func (c *Config) getValueFromSource(key string, def *Definition, sourceType Sour
 		return nil, false
 
 	case SourceFlag:
-		if def.flag != "" {
+		if len(def.flags) > 0 {
 			if flagVal, ok := c.flagValues[key]; ok && flagVal != nil && *flagVal != "" {
 				return *flagVal, true
 			}

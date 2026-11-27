@@ -28,26 +28,16 @@ func (ctx *ExecutionContext) CollectError(c *Config, key, expectedType, actualTy
 	ctx.mu.Lock()
 	defer ctx.mu.Unlock()
 
-	// If display is not provided, try to build it from config
-	display := ""
-	if c != nil {
-		flag := ""
-		envVar := ""
-		if def, hasDef := c.definitions[key]; hasDef {
-			flag = def.flag
-			envVar = def.envVar
-		}
-		display = getErrorDisplayName(GetError{Key: key, Flag: flag, EnvVar: envVar}, c)
-	}
-
 	// Get flag and envVar from config if available
 	flag := ""
 	envVar := ""
+	display := ""
 	if c != nil {
 		if def, hasDef := c.definitions[key]; hasDef {
-			flag = def.flag
+			flag = def.primaryFlag()
 			envVar = def.envVar
 		}
+		display = getErrorDisplayName(GetError{Key: key, Flag: flag, EnvVar: envVar}, c)
 	}
 
 	err := GetError{
@@ -75,7 +65,7 @@ func (ctx *ExecutionContext) CollectConfigError(c *Config, configErr ConfigError
 	envVar := ""
 	if c != nil {
 		if def, hasDef := c.definitions[configErr.Key]; hasDef {
-			flag = def.flag
+			flag = def.primaryFlag()
 			envVar = def.envVar
 		}
 	}

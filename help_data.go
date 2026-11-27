@@ -25,7 +25,7 @@ func (ue *unifiedExtractor) ExtractFlags(defs map[string]*Definition) []flagInfo
 		def := defs[key]
 
 		// Only include actual flags (those with a flag name), not environment-only variables
-		if def.flag == "" {
+		if len(def.flags) == 0 {
 			continue // Skip environment-only variables
 		}
 
@@ -69,8 +69,8 @@ func (ue *unifiedExtractor) ExtractEnvVars(defs map[string]*Definition) []flagIn
 
 		// Set DisplayLine for environment variables
 		// For environment variable display, create a modified definition without flag
-		envDef := *def   // Copy the definition
-		envDef.flag = "" // Clear flag to force environment variable display format
+		envDef := *def     // Copy the definition
+		envDef.flags = nil // Clear flags to force environment variable display format
 		envVar.DisplayLine = buildDefinitionDisplay(&envDef)
 		envVar.EnvVarDisplay = envVar.DisplayLine
 

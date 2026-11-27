@@ -72,7 +72,7 @@ func TestBuildErrorDisplay(t *testing.T) {
 	flagDef := &Definition{
 		key:          "PORT",
 		valueType:    TypeInt64,
-		flag:         "port",
+		flags:        []string{"port"},
 		defaultValue: int64(8080),
 		required:     true,
 	}
@@ -97,7 +97,7 @@ func TestBuildDefinitionDisplay(t *testing.T) {
 	def := &Definition{
 		key:          "LOG_LEVEL",
 		valueType:    TypeString,
-		flag:         "log-level",
+		flags:        []string{"log-level"},
 		envVar:       "LOG_LEVEL",
 		defaultValue: "info",
 		validations: []Validation{
@@ -122,7 +122,7 @@ func TestNewConfigErrorConstructors(t *testing.T) {
 	def := &Definition{
 		key:          "PORT",
 		valueType:    TypeInt64,
-		flag:         "port",
+		flags:        []string{"port"},
 		defaultValue: int64(8080),
 	}
 
@@ -142,7 +142,7 @@ func TestNewConfigErrorConstructors(t *testing.T) {
 	requiredDef := &Definition{
 		key:       "BASE_URL",
 		valueType: TypeString,
-		flag:      "base-url",
+		flags:     []string{"base-url"},
 		required:  true,
 	}
 	requiredErr := newConfigError("BASE_URL", requiredDef, "validation", "", fmt.Errorf("Not provided"))

@@ -3,6 +3,7 @@ package kli
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 )
@@ -12,7 +13,7 @@ type Definition struct {
 	key          string
 	valueType    ValueType
 	envVar       string
-	flag         string
+	flags        []string
 	fileKey      string // Key name to look for in loaded files
 	defaultValue any
 	required     bool
@@ -190,8 +191,13 @@ func (b *DefinitionBuilder) Env(envVar string) *DefinitionBuilder {
 	return b
 }
 
+// Flag adds a command-line flag name. Call it more than once to give the same
+// value several names, such as Flag("f").Flag("file"). If more than one of them
+// is passed, the last one wins. Empty and repeated names are ignored.
 func (b *DefinitionBuilder) Flag(flag string) *DefinitionBuilder {
-	b.def.flag = flag
+	if flag != "" && !slices.Contains(b.def.flags, flag) {
+		b.def.flags = append(b.def.flags, flag)
+	}
 	return b
 }
 
@@ -314,6 +320,14 @@ func (b *DefinitionBuilder) Custom(name string, check func(value any) error) *De
 	return b
 }
 
+// primaryFlag returns the first declared flag name, or "" if there is none
+func (d *Definition) primaryFlag() string {
+	if len(d.flags) == 0 {
+		return ""
+	}
+	return d.flags[0]
+}
+
 // Helper functions for priority resolution
 
 // getEffectivePriority returns the priority to use for this definition
@@ -326,7 +340,7 @@ func (d *Definition) getEffectivePriority(configDefault SourcePriority) SourcePr
 }
 
 // inferAvailableSources determines which sources are available for this definition
-// based on the configured fields (envVar, flag, defaultValue, etc.)
+// based on the configured fields (envVar, flags, defaultValue, etc.)
 func (d *Definition) inferAvailableSources() []SourceType {
 	var sources []SourceType
 
@@ -340,8 +354,8 @@ func (d *Definition) inferAvailableSources() []SourceType {
 		sources = append(sources, SourceEnv)
 	}
 
-	// Add Flag source if flag is set
-	if d.flag != "" {
+	// Add Flag source if any flag is set
+	if len(d.flags) > 0 {
 		sources = append(sources, SourceFlag)
 	}
 

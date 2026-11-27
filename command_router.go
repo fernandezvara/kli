@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 )
 
 // CommandRouter routes commands and handles subcommands
@@ -101,25 +102,26 @@ func (cr *commandRouter) RouteWithHelpHandling(args []string, config *Config) (*
 		commandName = "--help"
 	}
 
-	if isHelpFlag(commandName) {
-		isFull := isFullHelpFlag(commandName)
-		// If there are remaining args, the first one is the command to show help for
-		// e.g. "app help deploy" or "app --help deploy"
-		helpCmd := ""
-		if len(remainingArgs) > 0 {
-			helpCmd = remainingArgs[0]
-		}
-		err := config.getHelpService().ShowHelpUnified(helpCmd, "", isFull, []GetError{}, config.commands)
-		return nil, nil, err // Help shown, no command to execute
+	// A flag in place of the command name belongs to the default command
+	isFlag := strings.HasPrefix(commandName, "-")
+	defaultCmd, hasDefault := config.commands[""]
+	requested, full := helpRequest(args[1:], config.definitions)
+
+	// Help for the command named after the flags, if any, as in
+	// "app help deploy" or "app --help deploy"
+	if isHelpFlag(commandName) || (isFlag && requested && !hasDefault) {
+		topics := helpTopics(args[1:], config.definitions)
+		return nil, nil, showHelpForTopics(config, topics, full)
 	}
 
 	// Check if this should route to empty string command (when args[1] looks like a flag)
-	if len(commandName) > 0 && commandName[0] == '-' {
-		if defaultCmd, exists := config.commands[""]; exists {
-			// Route to empty string command with all args as flags
-			ctx := NewCommandContext(args[1:], config, "", "")
-			return defaultCmd, ctx, nil
+	if isFlag && hasDefault {
+		// All args are flags of the default command
+		ctx := NewCommandContext(args[1:], config, "", "")
+		if requested, full := helpRequest(ctx.Args, definitionsFor(defaultCmd, config)); requested {
+			return nil, nil, config.getHelpService().ShowHelpUnified("", "", full, []GetError{}, config.commands)
 		}
+		return defaultCmd, ctx, nil
 	}
 
 	// Find command by name or alias
@@ -146,14 +148,45 @@ func (cr *commandRouter) RouteWithHelpHandling(args []string, config *Config) (*
 		finalCtx.Args = []string{"--help"}
 	}
 
-	if lastArgIsHelpFlag(finalCtx.Args) {
-		full := argsContainFullHelp(finalCtx.Args)
-		err := config.getHelpService().ShowHelpUnified(finalCtx.Command, finalCtx.SubCommand, full, []GetError{}, config.commands)
-		if err != nil {
-			return nil, nil, err
+	defs := definitionsFor(finalCmd, config)
+	if requested, full := helpRequest(finalCtx.Args, defs); requested {
+		subCommand := finalCtx.SubCommand
+		// The subcommand may come after the flag, as in "app user -h list"
+		if topics := helpTopics(finalCtx.Args, defs); subCommand == "" && len(topics) > 0 {
+			if subCmd := finalCmd.FindSubCommand(topics[0]); subCmd != nil {
+				subCommand = subCmd.Name
+			}
 		}
-		return nil, nil, nil
+		err := config.getHelpService().ShowHelpUnified(finalCtx.Command, subCommand, full, []GetError{}, config.commands)
+		return nil, nil, err // Help shown, no command to execute
 	}
 
 	return finalCmd, finalCtx, nil
+}
+
+// definitionsFor returns the definitions a command's flags are parsed with: its
+// own, or the global ones if it declares none
+func definitionsFor(cmd *Command, config *Config) map[string]*Definition {
+	if len(cmd.Definitions) > 0 {
+		return cmd.Definitions
+	}
+	return config.definitions
+}
+
+// showHelpForTopics shows help for the command, and subcommand, that topics
+// name. Without topics it shows the general help.
+func showHelpForTopics(config *Config, topics []string, full bool) error {
+	command, subCommand := "", ""
+	if len(topics) > 0 {
+		command = topics[0]
+		if cmd := findCommand(config.commands, command); cmd != nil {
+			command = cmd.Name
+			if len(topics) > 1 {
+				if subCmd := cmd.FindSubCommand(topics[1]); subCmd != nil {
+					subCommand = subCmd.Name
+				}
+			}
+		}
+	}
+	return config.getHelpService().ShowHelpUnified(command, subCommand, full, []GetError{}, config.commands)
 }

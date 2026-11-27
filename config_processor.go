@@ -113,7 +113,7 @@ func (cp *configProcessor) ValidateRequiredFlags(cmd *Command, ctx *CommandConte
 			hasValue := false
 
 			// Check flag value
-			if def.flag != "" {
+			if len(def.flags) > 0 {
 				var flagVal *string
 				if ctx.CommandConfig != nil {
 					flagVal, _ = ctx.CommandConfig.flagValues[key]

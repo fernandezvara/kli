@@ -2,6 +2,7 @@ package kli
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -52,8 +53,8 @@ func TestDefinitionBuilderSources(t *testing.T) {
 	if def.envVar != "PORT_ENV" {
 		t.Errorf("Env() should set envVar, got %s", def.envVar)
 	}
-	if def.flag != "port-flag" {
-		t.Errorf("Flag() should set flag, got %s", def.flag)
+	if !slices.Equal(def.flags, []string{"port-flag"}) {
+		t.Errorf("Flag() should set flag, got %v", def.flags)
 	}
 }
 
@@ -217,7 +218,7 @@ func TestDefinitionBuilderChaining(t *testing.T) {
 	if def.envVar != "FULL_ENV" {
 		t.Error("Chaining: envVar not set")
 	}
-	if def.flag != "full-flag" {
+	if !slices.Equal(def.flags, []string{"full-flag"}) {
 		t.Error("Chaining: flag not set")
 	}
 	if def.defaultValue != "default" {
@@ -353,7 +354,7 @@ func TestInferAvailableSources(t *testing.T) {
 	// Definition with all sources
 	def1 := &Definition{
 		envVar:       "TEST_ENV",
-		flag:         "test-flag",
+		flags:        []string{"test-flag"},
 		defaultValue: "default",
 	}
 	sources1 := def1.inferAvailableSources()

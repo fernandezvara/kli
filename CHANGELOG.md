@@ -1,14 +1,34 @@
 # Changelog
 
-## v0.4.0
+## Unreleased
+
+## v0.3.2
+
+### Added (No breaking changes)
+
+- `Flag` can be called several times to give one value several names (`Flag("f").Flag("file")`). If several are passed, the last one wins.
 
 ### Changed
 
-- **Breaking**: the library was renamed from `cli` to `kli`. The module path is now `github.com/fernandezvara/kli` and the package name is `kli`. Update your imports and replace `cli.` qualifiers with `kli.` (or keep `cli.` by aliasing the import: `cli "github.com/fernandezvara/kli"`).
+- `-h`, `--h`, `-help` and `--help` all show help, as do `-full-help` and `--full-help` for full help. Before, `-help` and `--h` were reported as errors.
+- Help flags work in any position before `--`, not only last. `app help <command> <subcommand>` shows the subcommand's help.
+- **Breaking**: `h` and `help` cannot be used as flag names; `Execute` fails with exit code 1 if any definition uses one.
+- Using one flag name on two values makes `Execute` fail with exit code 1, naming both, instead of panicking.
+- Flag errors no longer cut hyphenated names (`--dry-run` was reported as `--dry`).
+- Help and errors list all of a value's flags on one line (`-f --file string`). Single-character flags are shown with one dash, including when they are the only flag.
+
+
+
+
+
+## v0.3.1
+
+Help templates fix, added a newline to don't break the shell prompt.
+
 
 ## v0.3.0
 
-Same release as v0.2.1; the tag was created without changes.
+Same release as v0.2.1; the tag was created without changes. The repository has change from `github.com/fernandezvara/cli` to `github.com/fernandezvara/kli`.
 
 ## v0.2.1
 

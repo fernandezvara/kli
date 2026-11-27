@@ -298,7 +298,7 @@ There are no positional-argument declarations: pass values as flags or environme
 
 ### Help
 
-`app --help`, `app help`, `app help <command>`, `app <command> --help` and `app <group> help` all print help. A word after a group command that is not one of its subcommands (`app user zzz`) is a usage error.
+`app --help`, `app help`, `app help <command>`, `app <command> --help` and `app <group> help` all print help (`-h`, `--h` and `-help` work like `--help`). A help flag works in any position before `--`, unless it is the value of the flag in front of it. A word after a group command that is not one of its subcommands (`app user zzz`) is a usage error.
 
 ## Exit codes, environment and I/O
 
@@ -448,7 +448,7 @@ Returned by `cfg.Define(key)` and `cc.Define(key)`:
 | ------ | ----------- |
 | `String()`, `Int64()`, `Float64()`, `Bool()`, `Duration()`, `StringSlice()`, `Int64Slice()` | Set value type |
 | `Env(name)` | Environment variable name |
-| `Flag(name)` | Command-line flag name |
+| `Flag(name)` | Command-line flag name; repeat it to add aliases (`Flag("f").Flag("file")`). `h` and `help` are reserved, and a name can belong to only one definition per command |
 | `File(key)` | Config-file key name |
 | `Default(value)` | Default value |
 | `Delimiter(d)` | Delimiter for parsing slice flag values |

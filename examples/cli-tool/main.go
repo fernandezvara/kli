@@ -48,7 +48,7 @@ func main() {
 	cfg.Define("VERBOSE").
 		Bool().
 		Env("VERBOSE").
-		Flag("verbose").
+		Flag("verbose").Flag("v").
 		Default(false).
 		Description("Enable verbose logging")
 
@@ -342,13 +342,13 @@ Requires API_KEY environment variable for authentication.`).
 		Config(func(cc *kli.CommandConfig) {
 			cc.Define("DETAILED").
 				Bool().
-				Flag("detailed").
+				Flag("detailed").Flag("d").
 				Default(false).
 				Description("Show detailed status")
 
 			cc.Define("FORMAT").
 				String().
-				Flag("format").
+				Flag("format").Flag("f").
 				Default("text").
 				OneOf("text", "json").
 				Description("Output format")

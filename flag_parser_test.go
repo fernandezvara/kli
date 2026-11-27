@@ -13,13 +13,13 @@ func TestFlagParser_ParseCommand(t *testing.T) {
 	defs["port"] = &Definition{
 		key:         "port",
 		valueType:   TypeInt64,
-		flag:        "port",
+		flags:       []string{"port"},
 		description: "HTTP server port",
 	}
 	defs["verbose"] = &Definition{
 		key:         "verbose",
 		valueType:   TypeBool,
-		flag:        "verbose",
+		flags:       []string{"verbose"},
 		description: "Enable verbose logging",
 	}
 
@@ -86,7 +86,7 @@ func TestFlagParser_ParseGlobal(t *testing.T) {
 	defs["config"] = &Definition{
 		key:         "config",
 		valueType:   TypeString,
-		flag:        "config",
+		flags:       []string{"config"},
 		description: "Configuration file path",
 	}
 
@@ -143,7 +143,7 @@ func TestFlagParser_ParseGlobalUnknownFlags(t *testing.T) {
 	defs["port"] = &Definition{
 		key:         "port",
 		valueType:   TypeInt64,
-		flag:        "port",
+		flags:       []string{"port"},
 		description: "HTTP server port",
 	}
 
@@ -186,7 +186,7 @@ func TestParsedFlags_Structure(t *testing.T) {
 	defs["port"] = &Definition{
 		key:         "port",
 		valueType:   TypeInt64,
-		flag:        "port",
+		flags:       []string{"port"},
 		description: "HTTP server port",
 	}
 
