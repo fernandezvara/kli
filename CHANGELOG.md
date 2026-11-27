@@ -1,10 +1,8 @@
 # Changelog
 
-## Unreleased
-
 ## v0.3.2
 
-### Added (No breaking changes)
+### Added
 
 - `Flag` can be called several times to give one value several names (`Flag("f").Flag("file")`). If several are passed, the last one wins.
 
@@ -17,10 +15,6 @@
 - Using one flag name on two values makes `Execute` fail with exit code 1, naming both, instead of panicking.
 - Flag errors no longer cut hyphenated names (`--dry-run` was reported as `--dry`).
 - Help and errors list all of a value's flags on one line (`-f --file string`). Single-character flags are shown with one dash, including when they are the only flag.
-
-
-
-
 
 ## v0.3.1
 
