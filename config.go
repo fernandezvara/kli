@@ -309,19 +309,54 @@ func (c *Config) getHelpService() *helpService {
 	return c.helpService
 }
 
-// getCommands returns the commands map for help system
-func (c *Config) getCommands() map[string]*Command {
-	return c.commands
-}
-
 // createServices creates a new CommandServices instance for internal use
 func (c *Config) createServices() *CommandServices {
 	return newCommandServices()
 }
 
+// checkFlagNames returns an error if any global, command or subcommand
+// definition uses a flag name that is reserved for help or already taken
+func (c *Config) checkFlagNames() error {
+	check := func(defs map[string]*Definition) error {
+		for _, key := range slices.Sorted(maps.Keys(defs)) {
+			for _, name := range defs[key].flags {
+				if name == "h" || name == "help" {
+					return fmt.Errorf("help and/or h cannot be set as flag: %q uses %s",
+						key, formatFlagNames([]string{name}))
+				}
+			}
+		}
+		return checkDuplicateFlags(defs)
+	}
+
+	var checkCommands func(commands map[string]*Command) error
+	checkCommands = func(commands map[string]*Command) error {
+		for _, name := range slices.Sorted(maps.Keys(commands)) {
+			if err := check(commands[name].Definitions); err != nil {
+				return err
+			}
+			if err := checkCommands(commands[name].SubCommands); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	if err := check(c.definitions); err != nil {
+		return err
+	}
+	return checkCommands(c.commands)
+}
+
 func (c *Config) Execute(args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("no arguments provided")
+	}
+
+	// A wrong definition fails every run, whatever the arguments
+	if err := c.checkFlagNames(); err != nil {
+		_, _ = fmt.Fprintln(c.errOut(), err)
+		return &ExitError{Code: ExitFailure, Err: err, Reported: true}
 	}
 
 	// Check if this is a no-command application
@@ -346,7 +381,7 @@ func (c *Config) Execute(args []string) error {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintln(c.errOut(), helpText)
+			_, _ = fmt.Fprintln(c.errOut(), helpText)
 			return usageError(fmt.Errorf("configuration errors"), true)
 		}
 		return nil
@@ -397,13 +432,13 @@ func (c *Config) executeWithGlobalMiddleware(cmd *Command, ctx *CommandContext) 
 				if err != nil {
 					return err
 				}
-				fmt.Fprintln(c.errOut(), helpText)
+				_, _ = fmt.Fprintln(c.errOut(), helpText)
 				return usageError(result.Error, true)
 			}
 
 			// Always display the message if it exists
 			if result.Message != "" {
-				fmt.Fprintln(c.errOut(), result.Message)
+				_, _ = fmt.Fprintln(c.errOut(), result.Message)
 			}
 
 			if result.ShouldExit {

@@ -19,7 +19,7 @@ func TestUnifiedExtractor_ExtractFlags(t *testing.T) {
 	defs := map[string]*Definition{
 		"flag": {
 			key:         "flag",
-			flag:        "flag",
+			flags:       []string{"flag"},
 			valueType:   TypeString,
 			required:    true,
 			description: "A flag",

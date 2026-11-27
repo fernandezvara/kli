@@ -4,6 +4,7 @@ package kli
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 )
 
 func shouldDisplayDefault(def *Definition) bool {
@@ -62,9 +63,9 @@ func buildDefinitionDisplay(def *Definition) string {
 
 	// Determine the base format based on what type of display this is
 	var base string
-	if def.flag != "" {
+	if len(def.flags) > 0 {
 		// This is a flag display
-		base = fmt.Sprintf("--%s %s", def.flag, valueType)
+		base = fmt.Sprintf("%s %s", formatFlagNames(def.flags), valueType)
 
 		// Add env indicator if it also has an environment variable
 		if def.envVar != "" {
@@ -85,6 +86,21 @@ func buildDefinitionDisplay(def *Definition) string {
 	}
 
 	return fmt.Sprintf("%s (%s)", base, strings.Join(indicators, ", "))
+}
+
+// formatFlagNames renders all the names of a flag on one line, such as
+// "-f --file". Single-character names get one dash and come first; otherwise
+// the declaration order is kept.
+func formatFlagNames(flags []string) string {
+	var short, long []string
+	for _, name := range flags {
+		if utf8.RuneCountInString(name) == 1 {
+			short = append(short, "-"+name)
+		} else {
+			long = append(long, "--"+name)
+		}
+	}
+	return strings.Join(append(short, long...), " ")
 }
 
 // newConfigError creates a unified ConfigError for all error types

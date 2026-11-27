@@ -34,7 +34,7 @@ func TestCommandExecutor_Integration(t *testing.T) {
 			"PORT": {
 				key:          "PORT",
 				valueType:    TypeInt64,
-				flag:         "port",
+				flags:        []string{"port"},
 				description:  "Server port",
 				defaultValue: int64(3000),
 			},
@@ -81,7 +81,7 @@ func TestConfigProcessor_Integration(t *testing.T) {
 			"DEBUG": {
 				key:          "DEBUG",
 				valueType:    TypeBool,
-				flag:         "debug",
+				flags:        []string{"debug"},
 				description:  "Enable debug mode",
 				defaultValue: false,
 			},

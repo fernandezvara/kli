@@ -28,26 +28,16 @@ func (ctx *ExecutionContext) CollectError(c *Config, key, expectedType, actualTy
 	ctx.mu.Lock()
 	defer ctx.mu.Unlock()
 
-	// If display is not provided, try to build it from config
-	display := ""
-	if c != nil {
-		flag := ""
-		envVar := ""
-		if def, hasDef := c.definitions[key]; hasDef {
-			flag = def.flag
-			envVar = def.envVar
-		}
-		display = getErrorDisplayName(GetError{Key: key, Flag: flag, EnvVar: envVar}, c)
-	}
-
 	// Get flag and envVar from config if available
 	flag := ""
 	envVar := ""
+	display := ""
 	if c != nil {
 		if def, hasDef := c.definitions[key]; hasDef {
-			flag = def.flag
+			flag = def.primaryFlag()
 			envVar = def.envVar
 		}
+		display = getErrorDisplayName(GetError{Key: key, Flag: flag, EnvVar: envVar}, c)
 	}
 
 	err := GetError{
@@ -75,7 +65,7 @@ func (ctx *ExecutionContext) CollectConfigError(c *Config, configErr ConfigError
 	envVar := ""
 	if c != nil {
 		if def, hasDef := c.definitions[configErr.Key]; hasDef {
-			flag = def.flag
+			flag = def.primaryFlag()
 			envVar = def.envVar
 		}
 	}
@@ -150,9 +140,9 @@ func (ctx *ExecutionContext) renderErrorsWithCommand(cmd *Command, helpService *
 	// Create a simple help display for errors
 	var builder strings.Builder
 	if exe := helpService.coordinator.executable; ctx.command == exe || ctx.command == "" {
-		builder.WriteString(fmt.Sprintf("Usage: %s [options]\n\n", exe))
+		fmt.Fprintf(&builder, "Usage: %s [options]\n\n", exe)
 	} else {
-		builder.WriteString(fmt.Sprintf("Usage: %s %s [options]\n\n", exe, ctx.command))
+		fmt.Fprintf(&builder, "Usage: %s %s [options]\n\n", exe, ctx.command)
 	}
 
 	if cmd != nil && cmd.LongHelp != "" {
@@ -163,7 +153,7 @@ func (ctx *ExecutionContext) renderErrorsWithCommand(cmd *Command, helpService *
 	if len(errs) > 0 {
 		builder.WriteString("Configuration errors:\n")
 		for _, err := range errs {
-			builder.WriteString(fmt.Sprintf("  %s -> %s\n", err.Display, err.ErrorDescription))
+			fmt.Fprintf(&builder, "  %s -> %s\n", err.Display, err.ErrorDescription)
 		}
 		builder.WriteString("\n")
 	}

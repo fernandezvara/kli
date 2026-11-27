@@ -5,7 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"maps"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -19,7 +21,7 @@ type FlagParser interface {
 	ParseGlobal(args []string, defs map[string]*Definition) (*ParsedFlags, error)
 
 	// ConvertFlagErrorsToConfigErrors converts flag parsing errors to ConfigError instances
-	ConvertFlagErrorsToConfigErrors(errors []error, defs map[string]*Definition) []ConfigError
+	ConvertFlagErrorsToConfigErrors(errs []error, defs map[string]*Definition) []ConfigError
 }
 
 // ParsedFlags contains the results of flag parsing
@@ -29,7 +31,6 @@ type ParsedFlags struct {
 	Errors  []error            // Any parsing errors encountered
 }
 
-// flagParser implements FlagParser interface
 // boolFlag stores a boolean flag's value as a string, like every other
 // flag, but lets the flag package treat it as a switch: --flag means true,
 // --flag=false means false, and --flag never swallows the next argument.
@@ -53,6 +54,23 @@ func (b *boolFlag) Set(s string) error {
 
 func (b *boolFlag) IsBoolFlag() bool { return true }
 
+// checkDuplicateFlags returns an error if two definitions use one flag name
+func checkDuplicateFlags(defs map[string]*Definition) error {
+	owners := make(map[string]string) // flag name -> definition key
+	// Sorted so that a duplicated name is always reported the same way.
+	for _, key := range slices.Sorted(maps.Keys(defs)) {
+		for _, name := range defs[key].flags {
+			if owner, used := owners[name]; used {
+				return fmt.Errorf("flag %s duplicated on %q and %q",
+					formatFlagNames([]string{name}), owner, key)
+			}
+			owners[name] = key
+		}
+	}
+	return nil
+}
+
+// flagParser implements FlagParser interface
 type flagParser struct{}
 
 // newFlagParser creates a new FlagParser instance
@@ -86,19 +104,28 @@ func (fp *flagParser) parseFlags(args []string, defs map[string]*Definition, fla
 
 	// Create values map and register flags with correct types
 	values := make(map[string]*string)
+	// The flag package panics on a redefined name, so check first.
+	if err := checkDuplicateFlags(defs); err != nil {
+		return &ParsedFlags{Values: values, FlagSet: flagSet}, err
+	}
+
 	for key, def := range defs {
-		if def.flag == "" {
+		if len(def.flags) == 0 {
 			continue
 		}
-		if def.valueType == TypeBool {
-			p := new(string)
-			flagSet.Var((*boolFlag)(p), def.flag, def.description)
-			values[key] = p
-			continue
+		// All the names of a definition share one value, so any of them sets
+		// it and the last one on the command line wins.
+		p := new(string)
+		values[key] = p
+		for _, name := range def.flags {
+			if def.valueType == TypeBool {
+				flagSet.Var((*boolFlag)(p), name, def.description)
+				continue
+			}
+			// Every other flag is a string here; the type conversion happens
+			// during config processing.
+			flagSet.StringVar(p, name, "", def.description)
 		}
-		// Every other flag is a string here; the type conversion happens
-		// during config processing.
-		values[key] = flagSet.String(def.flag, "", def.description)
 	}
 
 	// Parse flags and collect any errors
@@ -119,32 +146,24 @@ func (fp *flagParser) parseFlags(args []string, defs map[string]*Definition, fla
 }
 
 // ConvertFlagErrorsToConfigErrors converts flag parsing errors to ConfigError instances
-func (fp *flagParser) ConvertFlagErrorsToConfigErrors(errors []error, defs map[string]*Definition) []ConfigError {
+func (fp *flagParser) ConvertFlagErrorsToConfigErrors(errs []error, defs map[string]*Definition) []ConfigError {
 	var configErrs []ConfigError
 
-	for _, err := range errors {
+	for _, err := range errs {
 		// Try to extract the problematic flag from the error message
 		errMsg := err.Error()
 		var flagName string
 
-		// Common flag error patterns
-		if strings.Contains(errMsg, "flag needs an argument: -") {
-			// Extract flag name from "flag needs an argument: -debug"
-			parts := strings.Split(errMsg, "-")
-			if len(parts) > 1 {
-				flagName = parts[1]
-			}
-		} else if strings.Contains(errMsg, "invalid flag: -") {
-			// Extract flag name from "invalid flag: -unknown"
-			parts := strings.Split(errMsg, "-")
-			if len(parts) > 1 {
-				flagName = parts[1]
-			}
-		} else if strings.Contains(errMsg, "provided but not defined: -") {
-			// Extract flag name from "flag provided but not defined: -unknown"
-			parts := strings.Split(errMsg, "-")
-			if len(parts) > 1 {
-				flagName = parts[1]
+		// Common flag error patterns, each followed by the flag name, as in
+		// "flag needs an argument: -dry-run"
+		for _, pattern := range []string{
+			"flag needs an argument: -",
+			"invalid flag: -",
+			"provided but not defined: -",
+		} {
+			if _, name, found := strings.Cut(errMsg, pattern); found {
+				flagName = name
+				break
 			}
 		}
 
@@ -152,7 +171,7 @@ func (fp *flagParser) ConvertFlagErrorsToConfigErrors(errors []error, defs map[s
 		var def *Definition
 		if flagName != "" {
 			for key, d := range defs {
-				if d.flag == flagName {
+				if slices.Contains(d.flags, flagName) {
 					def = d
 					flagName = key
 					break
@@ -165,9 +184,11 @@ func (fp *flagParser) ConvertFlagErrorsToConfigErrors(errors []error, defs map[s
 			// Create a generic definition for unknown flag errors
 			def = &Definition{
 				key:         "unknown_flag",
-				flag:        flagName,
 				valueType:   TypeString,
 				description: "Unknown flag",
+			}
+			if flagName != "" {
+				def.flags = []string{flagName}
 			}
 			flagName = "unknown_flag"
 		}

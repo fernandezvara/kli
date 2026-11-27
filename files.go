@@ -130,7 +130,7 @@ func (c *Config) getValueFromSource(key string, def *Definition, sourceType Sour
 		return nil, false
 
 	case SourceFlag:
-		if def.flag != "" {
+		if len(def.flags) > 0 {
 			if flagVal, ok := c.flagValues[key]; ok && flagVal != nil && *flagVal != "" {
 				return *flagVal, true
 			}
@@ -215,7 +215,7 @@ func (c *Config) resolveValueWithPriorityContext(key string, def *Definition, ct
 
 	// No value found
 	if def.required {
-		return nil, SourceDefault, fmt.Errorf("Not provided")
+		return nil, SourceDefault, fmt.Errorf("not provided")
 	}
 
 	return nil, SourceDefault, nil

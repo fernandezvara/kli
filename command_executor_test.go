@@ -144,7 +144,7 @@ func TestCommandExecutor_Execute_ConfigProcessing(t *testing.T) {
 			"PORT": {
 				key:          "PORT",
 				valueType:    TypeInt64,
-				flag:         "port",
+				flags:        []string{"port"},
 				description:  "Server port",
 				defaultValue: int64(8080),
 			},
@@ -177,7 +177,7 @@ func TestCommandExecutor_Execute_ConfigError(t *testing.T) {
 			"REQUIRED": {
 				key:         "REQUIRED",
 				valueType:   TypeString,
-				flag:        "required",
+				flags:       []string{"required"},
 				description: "Required flag",
 				required:    true,
 			},

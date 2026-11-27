@@ -16,14 +16,14 @@ func TestConfigProcessor_ProcessCommandConfig(t *testing.T) {
 			"PORT": {
 				key:          "PORT",
 				valueType:    TypeInt64,
-				flag:         "port",
+				flags:        []string{"port"},
 				description:  "Server port",
 				defaultValue: 8080,
 			},
 			"ENV": {
 				key:         "ENV",
 				valueType:   TypeString,
-				flag:        "env",
+				flags:       []string{"env"},
 				description: "Environment",
 				required:    true,
 			},
@@ -84,7 +84,7 @@ func TestConfigProcessor_ProcessCommandConfig_WithError(t *testing.T) {
 			"PORT": {
 				key:         "PORT",
 				valueType:   TypeInt64,
-				flag:        "port",
+				flags:       []string{"port"},
 				description: "Server port",
 				required:    true, // Make it required to trigger validation error
 			},
@@ -124,7 +124,7 @@ func TestConfigProcessor_ValidateRequiredFlags(t *testing.T) {
 			"ENV": {
 				key:         "ENV",
 				valueType:   TypeString,
-				flag:        "env",
+				flags:       []string{"env"},
 				description: "Environment",
 				required:    true,
 			},
@@ -138,7 +138,7 @@ func TestConfigProcessor_ValidateRequiredFlags(t *testing.T) {
 			"HOST": {
 				key:          "HOST",
 				valueType:    TypeString,
-				flag:         "host",
+				flags:        []string{"host"},
 				description:  "Host address",
 				defaultValue: "localhost",
 				required:     true,
@@ -178,7 +178,7 @@ func TestConfigProcessor_ValidateRequiredFlags_Missing(t *testing.T) {
 			"ENV": {
 				key:         "ENV",
 				valueType:   TypeString,
-				flag:        "env",
+				flags:       []string{"env"},
 				description: "Environment",
 				required:    true,
 			},
@@ -253,7 +253,7 @@ func TestValidateRequiredFlagsLogsWarning(t *testing.T) {
 				key:       "BASE_URL",
 				valueType: TypeString,
 				envVar:    "BASE_URL",
-				flag:      "base-url",
+				flags:     []string{"base-url"},
 				required:  true,
 			},
 		},
@@ -292,8 +292,8 @@ func TestConfigMutationFix(t *testing.T) {
 
 	// Create a command with its own definitions
 	cmd := newTestCommand("test")
-	cmd.Definitions["PORT"] = &Definition{key: "PORT", valueType: TypeInt64, flag: "port", defaultValue: int64(8080)}
-	cmd.Definitions["MODE"] = &Definition{key: "MODE", valueType: TypeString, flag: "mode", defaultValue: "command"}
+	cmd.Definitions["PORT"] = &Definition{key: "PORT", valueType: TypeInt64, flags: []string{"port"}, defaultValue: int64(8080)}
+	cmd.Definitions["MODE"] = &Definition{key: "MODE", valueType: TypeString, flags: []string{"mode"}, defaultValue: "command"}
 
 	// Create context with global config
 	ctx := NewCommandContext([]string{"--port", "9000", "--mode", "test"}, globalConfig, "test", "")
@@ -379,10 +379,10 @@ func TestConfigIsolation(t *testing.T) {
 
 	// Create two different commands
 	cmd1 := newTestCommand("cmd1")
-	cmd1.Definitions["VALUE"] = &Definition{key: "VALUE", valueType: TypeInt64, flag: "value", defaultValue: int64(100)}
+	cmd1.Definitions["VALUE"] = &Definition{key: "VALUE", valueType: TypeInt64, flags: []string{"value"}, defaultValue: int64(100)}
 
 	cmd2 := newTestCommand("cmd2")
-	cmd2.Definitions["VALUE"] = &Definition{key: "VALUE", valueType: TypeInt64, flag: "value", defaultValue: int64(200)}
+	cmd2.Definitions["VALUE"] = &Definition{key: "VALUE", valueType: TypeInt64, flags: []string{"value"}, defaultValue: int64(200)}
 
 	// Process first command
 	ctx1 := NewCommandContext([]string{"--value", "150"}, globalConfig, "cmd1", "")
